@@ -1,7 +1,7 @@
 
 import axios from 'axios'
 
-const baseURL = 'http://localhost:3001/persons'
+const baseURL = '/api/persons'
 //Haetaan kaikki yhteystiedot
 const getAll = () => {
     const request = axios.get(baseURL)
@@ -9,6 +9,7 @@ const getAll = () => {
 }
 //Päivitetään yhteystietoja
 const update = (id, noteObject) => {
+    console.log("Update pyyntö lähtee osoitteeseen: ", `${baseURL}/${id}`)
     const request = axios.put(`${baseURL}/${id}`, noteObject)
     return request.then(response => response.data)
 }

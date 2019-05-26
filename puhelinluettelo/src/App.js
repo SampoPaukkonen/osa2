@@ -2,8 +2,8 @@ import React, {useState, useEffect} from 'react';
 import Numbers from './components/Numbers'
 import PersonForm from './components/PersonForm'
 import Filter from './components/Filter'
-import axios from 'axios'
 import NoteService from './components/SpecialNoteService'
+import axios from 'axios'
 import Message from './components/Message'
 import ErrorMessage from './components/ErrorMessage'
 
@@ -14,7 +14,7 @@ const App = () => {
   //Henkilötiedot haetaan serveriltä
   useEffect(() => {
     axios
-      .get('http://localhost:3001/persons')
+      .get('/api/persons')
       .then(response => {
         setPersons(response.data)
       })
@@ -82,12 +82,14 @@ const App = () => {
       //Result arvoksi määräytyy tosi/epätosi
       const result  = window.confirm(message)
       const target  = persons.filter(person => person.name === newName)[0]
+      console.log(result)
       if (result) {
-        //Luodaan lisättävä henkilö
+        //Luodaan päivitettävä henkilö
+        //Serveri muuttaa päivitettävän henkilön tietoja ja palauttaa kyseisen henkilön
         const changedPerson = {...target, number: newNumber}
-        const request = NoteService.update(changedPerson.id, changedPerson)
+        const request = NoteService.update(changedPerson._id, changedPerson)
         request.then(data => {
-          setPersons(persons.map(person => person.id === target.id ? data : person))
+          setPersons(persons.map(person => person._id === target._id ? data : person))
           displayMessage(`Henkilö ${target.name} päivitetty onnistuneesti`)
         }).catch(error => {
           displayErrorMessage(`Henkilö ${target.name} oli jo poistettu`)
@@ -100,10 +102,13 @@ const App = () => {
         name: newName,
         number: newNumber
       }
-      const request = NoteService.create(nameObject)
-      request.then(data => setPersons(persons.concat(data)))
       //Henkilö lisätään funktionaaliseen tyyliin ja tekstikenttä resetoidaan alla
-      displayMessage(`Henkilö ${newName} lisätty onnistunesti`)
+      const request = NoteService.create(nameObject)
+      request.then(data => {
+        setPersons(persons.concat(data))
+        displayMessage(`Henkilö ${newName} lisätty onnistunesti`)})
+        .catch(error => {
+          displayErrorMessage(error.response.data.error)})
       setNewName('');
       setNewNumber('');
     }
